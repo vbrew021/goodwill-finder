@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Goodwill Finder</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f1a;
+    --bg2: #16162a;
+    --bg3: #1e1e36;
+    --card: #1a1a2e;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0f0f8;
+    --muted: #8888aa;
+    --accent: #7c6af7;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --tag-bg: rgba(124,106,247,0.15);
+    --tag-text: #a78bfa;
+    --new-bg: rgba(52,211,153,0.15);
+    --new-text: #34d399;
+    --ending-bg: rgba(251,191,36,0.15);
+    --ending-text: #fbbf24;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  nav {
+    display: flex;
+    gap: 4px;
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  nav button.active {
+    background: var(--tag-bg);
+    color: var(--accent2);
+  }
+
+  nav button:hover:not(.active) {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  main { padding: 16px; max-width: 600px; margin: 0 auto; }
+
+  /* ---- KEYWORDS TAB ---- */
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .keyword-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px 5px 14px;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .chip-remove {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    transition: color 0.1s;
+  }
+  .chip-remove:hover { color: var(--red); }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .add-row input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .add-row input:focus { border-color: var(--accent); }
+  .add-row input::placeholder { color: var(--muted); }
+
+  .btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 9px 18px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--accent2);
+    border: 1px solid var(--border2);
+  }
+  .btn-outline:hover { background: var(--tag-bg); }
+
+  /* ---- SEARCH TAB ---- */
+  .search-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .run-btn {
+    width: 100%;
+    padding: 13px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  .progress-bar {
+    background: var(--bg3);
+    border-radius: 4px;
+    height: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  .progress-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 10px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .filter-toggle {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-toggle.on {
+    background: var(--tag-bg);
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
+
+  .results-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* ---- ITEM CARDS ---- */
+  .item-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.15s;
+    position: relative;
+  }
+
+  .item-card:hover { border-color: var(--border2); }
+  .item-card.seen { opacity: 0.45; }
+
+  .card-img-wrap {
+    position: relative;
+    background: var(--bg3);
+    height: 180px;
+    overflow: hidden;
+  }
+
+  .card-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    padding: 8px;
+  }
+
+  .card-badges {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-new { background: var(--new-bg); color: var(--new-text); }
+  .badge-ending { background: var(--ending-bg); color: var(--ending-text); }
+
+  .seen-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .seen-btn:hover { background: var(--new-bg); color: var(--green); border-color: var(--green); }
+  .item-card.seen .seen-btn { background: var(--new-bg); color: var(--green); border-color: var(--green); }
+
+  .card-body {
+    padding: 12px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--text);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .card-price {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--green);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .card-bids {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    padding: 8px 14px;
+  }
+
+  .card-keyword {
+    font-size: 11px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .card-link {
+    font-size: 12px;
+    color: var(--accent2);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .card-link:hover { text-decoration: underline; }
+
+  .card-time {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ---- EMPTY / LOADING STATES ---- */
+  .empty {
+    text-align: center;
+    padding: 48px 16px;
+    color: var(--muted);
+  }
+
+  .empty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- SETTINGS TAB ---- */
+  .settings-section {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .settings-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .settings-row:first-child { padding-top: 0; }
+
+  .settings-label { font-size: 14px; }
+  .settings-hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .settings-input {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 10px;
+    width: 160px;
+    outline: none;
+  }
+  .settings-input:focus { border-color: var(--accent); }
+
+  .proxy-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+  .status-dot.ok { background: var(--green); }
+  .status-dot.err { background: var(--red); }
+  .status-dot.pending { background: var(--amber); }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    z-index: 999;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Goodwill Finder
+  </div>
+  <nav>
+    <button class="active" onclick="showTab('search')" id="tab-search">Search</button>
+    <button onclick="showTab('keywords')" id="tab-keywords">Keywords</button>
+    <button onclick="showTab('settings')" id="tab-settings">Settings</button>
+  </nav>
+</header>
+
+<main id="main-content"></main>
+
+<div id="toast" class="toast" style="opacity:0;"></div>
+
+<script>
+const DEFAULT_KEYWORDS = [
+  "Lego medieval","Lego tudor","Lego village","Lego town",
+  "Lego castle","Lego Harry Potter","Lego ideas","Lego icons","Lego bricklink"
+];
+
+const DEFAULT_PROXY = "https://your-proxy.onrender.com";
+
+let state = {
+  keywords: [],
+  proxyUrl: DEFAULT_PROXY,
+  seenIds: new Set(),
+  results: [],
+  searching: false,
+  progress: 0,
+  progressLabel: "",
+  sortBy: "newest",
+  filterKeyword: "all",
+  unseenOnly: false,
+  activeTab: "search",
+  proxyStatus: "pending",
+};
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("gf_state") || "{}");
+    state.keywords = saved.keywords || [...DEFAULT_KEYWORDS];
+    state.proxyUrl = saved.proxyUrl || DEFAULT_PROXY;
+    state.seenIds = new Set(saved.seenIds || []);
+    state.results = saved.results || [];
+  } catch { state.keywords = [...DEFAULT_KEYWORDS]; }
+}
+
+function save() {
+  localStorage.setItem("gf_state", JSON.stringify({
+    keywords: state.keywords,
+    proxyUrl: state.proxyUrl,
+    seenIds: [...state.seenIds],
+    results: state.results,
+  }));
+}
+
+function showTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tab).classList.add("active");
+  render();
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.opacity = "1";
+  setTimeout(() => el.style.opacity = "0", 2500);
+}
+
+function isNewToday(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const now = new Date();
+  return (now - d) < 24 * 60 * 60 * 1000;
+}
+
+function isEndingSoon(dateStr) {
+  if (!dateStr) return false;
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = d - now;
+  return diff > 0 && diff < 6 * 60 * 60 * 1000;
+}
+
+function formatTimeLeft(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = d - now;
+  if (diff <= 0) return "ended";
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 48) return Math.floor(h / 24) + "d left";
+  if (h > 0) return h + "h " + m + "m left";
+  return m + "m left";
+}
+
+async function runSearch() {
+  if (state.searching) return;
+  if (!state.keywords.length) { toast("Add some keywords first!"); showTab("keywords"); return; }
+  const proxy = state.proxyUrl.replace(/\/$/, "");
+  if (proxy === DEFAULT_PROXY || !proxy) { toast("Set your proxy URL in Settings first"); showTab("settings"); return; }
+
+  state.searching = true;
+  state.progress = 0;
+  state.results = [];
+  render();
+
+  const newResults = [];
+  for (let i = 0; i < state.keywords.length; i++) {
+    const kw = state.keywords[i];
+    state.progressLabel = "Searching: " + kw;
+    state.progress = Math.round(((i) / state.keywords.length) * 100);
+    render();
+    try {
+      const resp = await fetch(proxy + "/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword: kw, pageSize: 40 }),
+      });
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const data = await resp.json();
+      const items = data.searchResults?.items || data.items || [];
+      items.forEach(item => {
+        newResults.push({
+          id: String(item.itemId || item.ItemId || Math.random()),
+          title: item.title || item.Title || "Untitled",
+          price: item.currentPrice || item.CurrentPrice || 0,
+          bids: item.numBids || item.NumBids || 0,
+          image: item.imageUrl || item.ImageUrl || "",
+          endDate: item.endTime || item.EndTime || item.endDate || "",
+          startDate: item.startTime || item.StartTime || item.startDate || "",
+          keyword: kw,
+          url: "https://shopgoodwill.com/item/" + (item.itemId || item.ItemId),
+        });
+      });
+    } catch (e) {
+      console.error("Search failed for", kw, e);
+    }
+  }
+
+  // Deduplicate by id, prefer first occurrence
+  const seen = new Set();
+  state.results = newResults.filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true; });
+  state.progress = 100;
+  state.progressLabel = "Done! " + state.results.length + " items found";
+  state.searching = false;
+  save();
+  render();
+  toast("Found " + state.results.length + " items across " + state.keywords.length + " searches");
+}
+
+function toggleSeen(id) {
+  if (state.seenIds.has(id)) state.seenIds.delete(id);
+  else state.seenIds.add(id);
+  save();
+  render();
+}
+
+function markAllSeen() {
+  state.results.forEach(r => state.seenIds.add(r.id));
+  save();
+  render();
+  toast("Marked all as seen");
+}
+
+function getFiltered() {
+  let items = [...state.results];
+  if (state.filterKeyword !== "all") items = items.filter(r => r.keyword === state.filterKeyword);
+  if (state.unseenOnly) items = items.filter(r => !state.seenIds.has(r.id));
+  if (state.sortBy === "newest") items.sort((a,b) => new Date(b.startDate) - new Date(a.startDate));
+  else if (state.sortBy === "ending") items.sort((a,b) => new Date(a.endDate) - new Date(b.endDate));
+  else if (state.sortBy === "price_asc") items.sort((a,b) => a.price - b.price);
+  else if (state.sortBy === "price_desc") items.sort((a,b) => b.price - a.price);
+  return items;
+}
+
+async function checkProxy() {
+  const proxy = state.proxyUrl.replace(/\/$/, "");
+  if (!proxy || proxy === DEFAULT_PROXY) { state.proxyStatus = "err"; render(); return; }
+  state.proxyStatus = "pending";
+  render();
+  try {
+    const r = await fetch(proxy + "/health", { signal: AbortSignal.timeout(8000) });
+    state.proxyStatus = r.ok ? "ok" : "err";
+  } catch { state.proxyStatus = "err"; }
+  render();
+}
+
+function render() {
+  const c = document.getElementById("main-content");
+  if (state.activeTab === "keywords") c.innerHTML = renderKeywords();
+  else if (state.activeTab === "search") c.innerHTML = renderSearch();
+  else if (state.activeTab === "settings") c.innerHTML = renderSettings();
+}
+
+function renderKeywords() {
+  const chips = state.keywords.map((kw, i) => `
+    <div class="chip">
+      ${esc(kw)}
+      <button class="chip-remove" onclick="removeKeyword(${i})" title="Remove">×</button>
+    </div>`).join("");
+  return `
+    <div style="margin-top:4px">
+      <div class="section-label">Active keywords (${state.keywords.length})</div>
+      <div class="keyword-chips">${chips || '<span style="color:var(--muted);font-size:13px">No keywords yet</span>'}</div>
+      <div class="add-row">
+        <input type="text" id="kw-input" placeholder="e.g. Lego technic" onkeydown="if(event.key==='Enter')addKeyword()">
+        <button class="btn" onclick="addKeyword()">Add</button>
+      </div>
+    </div>`;
+}
+
+function renderSearch() {
+  const filtered = getFiltered();
+  const newCount = state.results.filter(r => isNewToday(r.startDate)).length;
+  const unseenCount = state.results.filter(r => !state.seenIds.has(r.id)).length;
+
+  const progressHtml = state.searching || state.progress > 0 ? `
+    <div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${state.progress}%"></div></div>
+      <div class="progress-label">${esc(state.progressLabel)}</div>
+    </div>` : "";
+
+  const filtersHtml = state.results.length ? `
+    <div class="filters">
+      <select class="filter-select" onchange="state.sortBy=this.value;render()">
+        <option value="newest" ${state.sortBy==="newest"?"selected":""}>Newest first</option>
+        <option value="ending" ${state.sortBy==="ending"?"selected":""}>Ending soon</option>
+        <option value="price_asc" ${state.sortBy==="price_asc"?"selected":""}>Price ↑</option>
+        <option value="price_desc" ${state.sortBy==="price_desc"?"selected":""}>Price ↓</option>
+      </select>
+      <select class="filter-select" onchange="state.filterKeyword=this.value;render()">
+        <option value="all">All keywords</option>
+        ${state.keywords.map(kw => `<option value="${esc(kw)}" ${state.filterKeyword===kw?"selected":""}>${esc(kw)}</option>`).join("")}
+      </select>
+      <button class="filter-toggle ${state.unseenOnly?"on":""}" onclick="state.unseenOnly=!state.unseenOnly;render()">
+        Unseen only
+      </button>
+    </div>
+    <div class="results-meta">
+      <span>${filtered.length} items${state.unseenOnly?" (unseen)":""} · ${newCount} new today · ${unseenCount} unseen</span>
+      ${unseenCount > 0 ? `<button class="btn-outline btn" style="font-size:12px;padding:4px 10px" onclick="markAllSeen()">Mark all seen</button>` : ""}
+    </div>` : "";
+
+  const cardsHtml = filtered.length ? filtered.map(item => {
+    const seen = state.seenIds.has(item.id);
+    const newToday = isNewToday(item.startDate);
+    const ending = isEndingSoon(item.endDate);
+    return `
+      <div class="item-card ${seen?"seen":""}">
+        <div class="card-img-wrap">
+          ${item.image ? `<img src="${esc(item.image)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ""}
+          <div class="card-badges">
+            ${newToday ? '<span class="badge badge-new">New today</span>' : ""}
+            ${ending ? '<span class="badge badge-ending">Ending soon</span>' : ""}
+          </div>
+          <button class="seen-btn" onclick="toggleSeen('${esc(item.id)}')" title="Toggle seen">✓</button>
+        </div>
+        <div class="card-body">
+          <div class="card-title">${esc(item.title)}</div>
+          <div class="card-meta">
+            <div>
+              <div class="card-price">$${Number(item.price).toFixed(2)}</div>
+              <div class="card-bids">${item.bids} bid${item.bids!==1?"s":""}</div>
+            </div>
+            <div class="card-time">${formatTimeLeft(item.endDate)}</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="card-keyword">${esc(item.keyword)}</span>
+          <a class="card-link" href="${esc(item.url)}" target="_blank" rel="noopener">View item →</a>
+        </div>
+      </div>`;
+  }).join("") : (state.results.length && state.unseenOnly ? `
+    <div class="empty">
+      <div class="empty-icon">✓</div>
+      <div>All caught up! No unseen items.</div>
+      <button class="btn-outline btn" style="margin-top:16px" onclick="state.unseenOnly=false;render()">Show all items</button>
+    </div>` : `
+    <div class="empty">
+      <div class="empty-icon">🔍</div>
+      <div style="font-weight:500;margin-bottom:6px">No results yet</div>
+      <div style="font-size:13px;color:var(--muted)">Hit Run Search to find Lego listings</div>
+    </div>`);
+
+  return `
+    <div class="search-controls">
+      <button class="btn run-btn" onclick="runSearch()" ${state.searching?"disabled":""}>
+        ${state.searching?'<span class="spinner"></span>Searching…':'Run Search'}
+      </button>
+      ${progressHtml}
+    </div>
+    ${filtersHtml}
+    ${cardsHtml}`;
+}
+
+function renderSettings() {
+  const statusMap = { ok: "Connected", err: "Unreachable", pending: "Checking…" };
+  return `
+    <div style="margin-top:4px">
+      <div class="section-label">Proxy server</div>
+      <div class="settings-section">
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Proxy URL</div>
+            <div class="settings-hint">Your Render deployment URL</div>
+          </div>
+          <input class="settings-input" type="url" id="proxy-input" value="${esc(state.proxyUrl)}"
+            placeholder="https://…onrender.com"
+            onchange="state.proxyUrl=this.value;save();state.proxyStatus='pending';render()">
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Status</div>
+          <div class="proxy-status">
+            <div class="status-dot ${state.proxyStatus}"></div>
+            ${statusMap[state.proxyStatus]}
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn" onclick="checkProxy()">Test connection</button>
+        </div>
+      </div>
+
+      <div class="section-label">Data</div>
+      <div class="settings-section">
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Seen items</div>
+            <div class="settings-hint">${state.seenIds.size} items marked as seen</div>
+          </div>
+          <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="clearSeen()">Clear</button>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-label">Cached results</div>
+            <div class="settings-hint">${state.results.length} items stored</div>
+          </div>
+          <button class="btn-outline btn" style="font-size:12px;padding:6px 12px" onclick="clearResults()">Clear</button>
+        </div>
+      </div>
+
+      <div class="section-label">Install as app</div>
+      <div class="settings-section">
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">
+          In Chrome on Android: tap the <strong style="color:var(--text)">⋮ menu</strong> → <strong style="color:var(--text)">Add to Home screen</strong> to install this as an app icon.
+        </div>
+      </div>
+    </div>`;
+}
+
+function addKeyword() {
+  const input = document.getElementById("kw-input");
+  const val = input.value.trim();
+  if (!val) return;
+  const lower = val.toLowerCase();
+  if (state.keywords.some(k => k.toLowerCase() === lower)) { toast("Already in list"); return; }
+  state.keywords.push(val);
+  save();
+  render();
+  document.getElementById("kw-input").focus();
+}
+
+function removeKeyword(i) {
+  state.keywords.splice(i, 1);
+  save();
+  render();
+}
+
+function clearSeen() {
+  state.seenIds = new Set();
+  save();
+  render();
+  toast("Cleared seen items");
+}
+
+function clearResults() {
+  state.results = [];
+  save();
+  render();
+  toast("Cleared cached results");
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+load();
+render();
+</script>
+</body>
+</html>
