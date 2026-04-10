@@ -1,17 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
-import json
 
 app = Flask(__name__)
-CORS(app)  # Allow all origins so the frontend can call this proxy
+CORS(app)
 
 SHOPGOODWILL_API = "https://buyerapi.shopgoodwill.com/api/Search/ItemListing"
 
 DEFAULT_PAYLOAD = {
     "categoryId": "0",
     "searchText": "",
-    "sortColumn": "1",        # 1 = newly listed
+    "sortColumn": "1",
     "sortDescending": True,
     "pageSize": 40,
     "page": 1,
@@ -36,6 +35,17 @@ HEADERS = {
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
+
+@app.route("/debug", methods=["GET"])
+def debug():
+    payload = {**DEFAULT_PAYLOAD, "searchText": "lego", "pageSize": 3}
+    try:
+        resp = requests.post(SHOPGOODWILL_API, json=payload, headers=HEADERS, timeout=15)
+        resp.raise_for_status()
+        data = resp.json()
+        return jsonify({"status": "ok", "raw": data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/search", methods=["POST"])
 def search():
